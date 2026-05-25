@@ -1,0 +1,25 @@
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    command: ["redis-server", "--appendonly", "no", "--save", ""]
+    restart: unless-stopped
+
+  featureflow:
+    build: .
+    ports:
+      - "8080:8080"
+      - "9100:9100"
+    environment:
+      FEATUREFLOW_REDIS_URL: redis://redis:6379/0
+      FEATUREFLOW_OFFLINE_STORE_PATH: /data/offline
+      FEATUREFLOW_REGISTRY_DB_PATH: /data/registry.duckdb
+    volumes:
+      - ff_data:/data
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+volumes:
+  ff_data:
